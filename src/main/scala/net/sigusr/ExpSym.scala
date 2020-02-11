@@ -113,6 +113,7 @@ object ExpSymTree {
       add e1 e2 ctx = add (e1 ctx) (e2 ctx)
 
  */
+
 object ExpSymPushNeg {
   def _instanceExpSymPushNeg[R: ExpSym]: ExpSym[Ctx0 => R] = new ExpSym[Ctx0 => R] {
     private val e = implicitly[ExpSym[R]]
@@ -126,8 +127,16 @@ object ExpSymPushNeg {
     }
     def add(r1: Ctx0 => R, r2: Ctx0 => R): Ctx0 => R = (ctx: Ctx0) => e.add(r1(ctx), r2(ctx))
   }
-  implicit val expSymPushNeg: ExpSym[Ctx0 => String] = {
+  implicit val expSymPushNegString: ExpSym[Ctx0 => String] = {
     import ExpSymString.expSymString
+    _instanceExpSymPushNeg
+  }
+  implicit val expSymPushNegInt: ExpSym[Ctx0 => Int] = {
+    import ExpSymInt.expSymInt
+    _instanceExpSymPushNeg
+  }
+  implicit val expSymPushNegFlataString: ExpSym[Ctx0 => (Ctx1[String] => String)] = {
+    import ExpSymFlata.expSymFlataString
     _instanceExpSymPushNeg
   }
 }
@@ -145,6 +154,7 @@ object ExpSymPushNeg {
       add e1 e2 ctx  = e1 (LCA (e2 ctx))
 
  */
+
 object ExpSymFlata {
   def _instanceExpSymFlata[R: ExpSym]: ExpSym[Ctx1[R] => R] = new ExpSym[Ctx1[R] => R] {
     private val e = implicitly[ExpSym[R]]
@@ -154,12 +164,20 @@ object ExpSymFlata {
     }
     def neg(r: Ctx1[R] => R): Ctx1[R] => R = {
       case NonLca => e.neg(r(NonLca))
-      case Lca(r1) => e.add(e.neg(r(NonLca)), r1)
+      case Lca(r1) => e.add(e.neg(r(NonLca)), r1) // assume only lits are negated
     }
     def add(r1: Ctx1[R] => R, r2: Ctx1[R] => R): Ctx1[R] => R = (ctx: Ctx1[R]) => r1(Lca(r2(ctx)))
   }
-  implicit val expSymFlata: ExpSym[Ctx1[String] => String] = {
+  implicit val expSymFlataString: ExpSym[Ctx1[String] => String]  = {
     import ExpSymString.expSymString
-    ExpSymFlata._instanceExpSymFlata
+    _instanceExpSymFlata
+  }
+  implicit val expSymFlataInt: ExpSym[Ctx1[Int] => Int] = {
+    import ExpSymInt.expSymInt
+    _instanceExpSymFlata
+  }
+  implicit val expSymFlataPushNegString: ExpSym[Ctx1[Ctx0 => String] => Ctx0 => String] = {
+    import ExpSymPushNeg.expSymPushNegString
+    _instanceExpSymFlata
   }
 }

@@ -38,7 +38,7 @@ A MulSym expression  when interpreted with the 'PushNeg' and then the 'String' e
   }
 
   private def e5 = {
-    import ExpSymPushNeg.expSymPushNeg
+    import ExpSymPushNeg.expSymPushNegString
     import MulSymPushNeg.mulSymPushNeg
     MulSymSamples.tfm1.apply(Pos) must_== "(7 + (2 * (-1)))"
   }
